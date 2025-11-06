@@ -1,0 +1,37 @@
+{
+	"name": "@vdegenne/subtitles",
+	"version": "0.1.0",
+	"description": "Small npm utility to work with subtitles.",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./lib/index.js",
+			"types": "./types.d.ts"
+		}
+	},
+	"files": [
+		"./lib/",
+		"./types.d.ts"
+	],
+	"scripts": {
+		"build": "wireit"
+	},
+	"devDependencies": {
+		"typescript": "^5.9.3",
+		"wireit": "^0.14.12"
+	},
+	"wireit": {
+		"build": {
+			"command": "tsc --pretty",
+			"clean": "if-file-deleted",
+			"files": [
+				"./tsconfig.json",
+				"./src"
+			],
+			"output": [
+				"./lib"
+			]
+		}
+	}
+}
+
