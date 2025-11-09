@@ -1,6 +1,6 @@
 {
 	"name": "@vdegenne/subtitles",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Small npm utility to work with subtitles.",
 	"type": "module",
 	"exports": {
@@ -34,4 +34,3 @@
 		}
 	}
 }
-
