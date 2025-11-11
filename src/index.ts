@@ -8,12 +8,31 @@ export function numericTimeToTimecode(seconds: sub.NumericTime): sub.Timecode {
 		String(((seconds * 1000) | 0) % 1000).padStart(3, '0')) as sub.Timecode
 }
 
-export function subtitlesToVTT(subtitles: sub.Subtitles): string {
+interface SubtitlesToVTTOptions {
+	/**
+	 * A number between 0 and 1 that determines the y-position of all subtitles in the final VTT output.
+	 * e.g. 0.9 would place the subtitles at 90% from the top (bottom area of the screen).
+	 */
+	verticalPosition: number
+}
+
+export function subtitlesToVTT(
+	subtitles: sub.Subtitles,
+	options?: Partial<SubtitlesToVTTOptions>,
+): string {
+	const opts: SubtitlesToVTTOptions = {
+		verticalPosition: 1,
+		...options,
+	}
+
 	let vtt = 'WEBVTT\n\n'
+
+	// Convert normalized 0–1 vertical position to WebVTT percent
+	const lineValue = Math.round(opts.verticalPosition * 100)
 
 	for (const s of subtitles) {
 		if (s.id != null) vtt += `${s.id}\n`
-		vtt += `${numericTimeToTimecode(s.start)} --> ${numericTimeToTimecode(s.end)}\n`
+		vtt += `${numericTimeToTimecode(s.start)} --> ${numericTimeToTimecode(s.end)} line:${lineValue}%\n`
 		vtt += `${s.text}\n\n`
 	}
 
