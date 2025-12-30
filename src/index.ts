@@ -8,6 +8,31 @@ export function numericTimeToTimecode(seconds: sub.NumericTime): sub.Timecode {
 		String(((seconds * 1000) | 0) % 1000).padStart(3, '0')) as sub.Timecode
 }
 
+export function timecodeToNumericTime(timecode: string): number {
+	const [main, msPart] = timecode.split('.')
+	if (main === undefined) {
+		throw new Error('invalid timecode')
+	}
+	const parts = main.split(':').map(Number)
+
+	let hours = 0,
+		minutes = 0,
+		seconds = 0,
+		milliseconds = 0
+
+	if (msPart) milliseconds = parseInt(msPart.padEnd(3, '0'), 10)
+
+	if (parts.length === 3) {
+		;[hours, minutes, seconds] = parts as [number, number, number]
+	} else if (parts.length === 2) {
+		;[minutes, seconds] = parts as [number, number]
+	} else if (parts.length === 1) {
+		seconds = parts[0] as number
+	}
+
+	return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000
+}
+
 interface SubtitlesToVTTOptions {
 	/**
 	 * A number between 0 and 1 that determines the y-position of all subtitles in the final VTT output.
@@ -31,7 +56,7 @@ export function subtitlesToVTT(
 	const lineValue = Math.round(opts.verticalPosition * 100)
 
 	for (const s of subtitles) {
-		if (s.id != null) vtt += `${s.id}\n`
+		if (s.id !== undefined && s.id !== null) vtt += `${s.id}\n`
 		vtt += `${numericTimeToTimecode(s.start)} --> ${numericTimeToTimecode(s.end)} line:${lineValue}%\n`
 		vtt += `${s.text}\n\n`
 	}

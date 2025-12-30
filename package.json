@@ -1,12 +1,16 @@
 {
 	"name": "@vdegenne/subtitles",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"description": "Small npm utility to work with subtitles.",
 	"type": "module",
 	"exports": {
 		".": {
 			"import": "./lib/index.js",
 			"types": "./types.d.ts"
+		},
+		"./SubtitlesManager.js": {
+			"import": "./lib/SubtitlesManager.js",
+			"types": "./lib/SubtitlesManager.d.ts"
 		}
 	},
 	"files": [
