@@ -5,7 +5,7 @@ declare global {
 		type NumericTime = number
 
 		interface Subtitle {
-			id: number
+			id: number | undefined
 			/** numeric time in seconds */
 			start: sub.NumericTime
 			/** numeric time in seconds */

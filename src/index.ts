@@ -1,15 +1,23 @@
-export function numericTimeToTimecode(seconds: sub.NumericTime): sub.Timecode {
-	return (String((seconds / 3600) | 0).padStart(2, '0') +
+export function numericTimeToTimecode(
+	seconds: sub.NumericTime,
+	msSep = '.',
+): sub.Timecode {
+	const hours = Math.floor(seconds / 3600)
+	const minutes = Math.floor(seconds / 60) % 60
+	const secs = Math.floor(seconds % 60)
+	const millis = Math.floor(seconds * 1000) % 1000
+
+	return (String(hours).padStart(2, '0') +
 		':' +
-		String(((seconds / 60) | 0) % 60).padStart(2, '0') +
+		String(minutes).padStart(2, '0') +
 		':' +
-		String((seconds | 0) % 60).padStart(2, '0') +
-		'.' +
-		String(((seconds * 1000) | 0) % 1000).padStart(3, '0')) as sub.Timecode
+		String(secs).padStart(2, '0') +
+		msSep +
+		String(millis).padStart(3, '0')) as sub.Timecode
 }
 
-export function timecodeToNumericTime(timecode: string): number {
-	const [main, msPart] = timecode.split('.')
+export function timecodeToNumericTime(timecode: string, msSep = '.'): number {
+	const [main, msPart] = timecode.split(msSep)
 	if (main === undefined) {
 		throw new Error('invalid timecode')
 	}
@@ -64,23 +72,52 @@ export function subtitlesToVTT(
 	return vtt
 }
 
-export function numericTimeToSRTTimecode(seconds: sub.NumericTime): string {
-	const hours = String((seconds / 3600) | 0).padStart(2, '0')
-	const minutes = String(((seconds / 60) | 0) % 60).padStart(2, '0')
-	const secs = String((seconds | 0) % 60).padStart(2, '0')
-	const millis = String(((seconds * 1000) | 0) % 1000).padStart(3, '0')
-	return `${hours}:${minutes}:${secs},${millis}`
-}
+// export function numericTimeToSRTTimecode(seconds: sub.NumericTime): string {
+// 	const hours = String((seconds / 3600) | 0).padStart(2, '0')
+// 	const minutes = String(((seconds / 60) | 0) % 60).padStart(2, '0')
+// 	const secs = String((seconds | 0) % 60).padStart(2, '0')
+// 	const millis = String(((seconds * 1000) | 0) % 1000).padStart(3, '0')
+// 	return `${hours}:${minutes}:${secs},${millis}`
+// }
 
 export function subtitlesToSRT(subtitles: sub.Subtitles): string {
 	let srt = ''
 	for (let i = 0; i < subtitles.length; i++) {
 		const s = subtitles[i]!
 		srt += `${i + 1}\n`
-		srt += `${numericTimeToSRTTimecode(s.start)} --> ${numericTimeToSRTTimecode(s.end)}\n`
+		srt += `${numericTimeToTimecode(s.start, ',')} --> ${numericTimeToTimecode(s.end, ',')}\n`
 		srt += `${s.text}\n\n`
 	}
 	return srt
+}
+
+export function SRTtoSubtitles(srt: string): sub.Subtitles {
+	const subtitles: sub.Subtitles = []
+
+	const blocks = srt
+		.replace(/\r\n/g, '\n')
+		.trim()
+		.split(/\n{2,}/)
+
+	for (const block of blocks) {
+		const lines = block.split('\n')
+		if (lines.length < 3) continue
+
+		const timeLine = lines[1]!
+		const textLines = lines.slice(2)
+
+		const [startStr, endStr] = timeLine.split(' --> ')
+		if (!startStr || !endStr) continue
+
+		subtitles.push({
+			id: undefined,
+			start: timecodeToNumericTime(startStr, ','),
+			end: timecodeToNumericTime(endStr, ','),
+			text: textLines.join('\n'),
+		})
+	}
+
+	return subtitles
 }
 
 export function VTTtoSRT(vtt: string): string {
